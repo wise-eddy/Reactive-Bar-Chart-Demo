@@ -7,6 +7,8 @@ Combined two examples for this demo:
  - The 'leaderboard' Meteor example
  - D3js bar-chart example from http://bl.ocks.org/mbostock/3885304
 
-This fork was modified to eliminate the use of the SpaceBars language (& their templates) in favor of a more familiar d3.js way of presenting views. This makes the codebase far more concise and eliminates the need of learning another templating language.
+This fork was modified to eliminate the use of the SpaceBars language (& their templates) in favor of a more familiar d3.js way of presenting views. This approach has two benefits:
+- it makes the codebase far more concise and 
+- it eliminates the need of learning another templating language.
  --------
 `meteor run` within the directory.
