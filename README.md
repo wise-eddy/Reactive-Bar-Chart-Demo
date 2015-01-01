@@ -9,6 +9,7 @@ Combined two examples for this demo:
 
 This fork was modified to eliminate the use of the SpaceBars language (& their templates) in favor of a more familiar d3.js way of presenting views. This approach has two benefits:
 - it makes the codebase far more concise and 
-- it eliminates the need of learning another templating language.
+- it eliminates the need to learn the syntax of another templating language.
+
  --------
-`meteor run` within the directory.
+Reminder: `meteor run` within the directory.
