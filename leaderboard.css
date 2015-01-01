@@ -3,30 +3,21 @@ body {
     font-weight: 200;
     margin: 50px 0;
     padding: 0;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
 }
 
-#outer {
+#test {
     width: 600px;
-    margin: 0 auto;    
+    margin: 0 auto;
+    font-size:10px;    
 }
 
-.player {
-    cursor: pointer;
-    padding: 5px;
-}
-
-.player .name {
+.name {
     display: inline-block;
     width: 300px;
     font-size: 1.75em;
 }
 
-.player .score {
+.score {
     display: inline-block;
     width: 100px;
     text-align: right;
@@ -35,52 +26,11 @@ body {
     color: #777;
 }
 
-.player.selected {
-    background-color: yellow;
-}
-
-.player.selected .score {
-    color: black;
-}
-
-.details, .none {
-    font-weight: bold;
-    font-size: 2em;
-    border-style: dashed none none none;
-    border-color: #ccc;
-    border-width: 4px;
-    margin: 50px 10px;
-    padding: 10px 0px;
-}
-
-.none {
-    color: #777;
+.player1.selected {
+	background-color:cornflowerblue;
+    color:black;
 }
 
 .inc {
   cursor: pointer;
-}
-
-.players {
-    display: inline;
-}
-
-.d3board {
-    display: inline;
-    font: 10px sans-serif;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.bar {
-  fill: steelblue;
-}
-
-.x.axis path {
-  display: none;
 }
