@@ -4,8 +4,8 @@ if (Meteor.isServer) {
   Meteor.startup(function () { 
   //   Players.remove({score: {$gte: 0}});  //reset  scores
      if (Players.find().count() === 0) ["A","B","C","D"].forEach(function(n) {Players.insert({name:n,score:Math.floor(Math.random()*1)*5})})
-  });
-}
+  }); //startup
+} //isServer
 
 if (Meteor.isClient) {
    Meteor.defer(function () {
