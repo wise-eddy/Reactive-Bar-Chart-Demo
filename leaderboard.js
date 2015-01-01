@@ -1,119 +1,60 @@
-// Combined two examples to have a simple demo of reactive d3 visulation.
-// Using the 'leaderboard' example from Meteor
-// and the bar-chart example from d3js (http://bl.ocks.org/mbostock/3885304)
+var Players = new Meteor.Collection("players");
 
-Players = new Meteor.Collection("players");
-
-if (Meteor.isClient) {
-  Template.leaderboard.players = function () {
-    return Players.find({}, {sort: {score: -1, name: 1}});
-  };
-
-  Template.leaderboard.selected_name = function () {
-    var player = Players.findOne(Session.get("selected_player"));
-    return player && player.name;
-  };
-
-  Template.player.selected = function () {
-    return Session.equals("selected_player", this._id) ? "selected" : '';
-  };
-
-  Template.leaderboard.events({
-    'click input.inc': function () {
-      Players.update(Session.get("selected_player"), {$inc: {score: 5}});
-    }
+if (Meteor.isServer) {
+  Meteor.startup(function () { 
+  //   Players.remove({score: {$gte: 0}});  //reset  scores
+     if (Players.find().count() === 0) ["A","B","C","D"].forEach(function(n) {Players.insert({name:n,score:Math.floor(Math.random()*1)*5})})
   });
-
-  Template.player.events({
-    'click': function () {
-      Session.set("selected_player", this._id);
-    }
-  });
-
-  Template.d3vis.created = function () {
-    // Defer to make sure we manipulate DOM
-    _.defer(function () {
-      // Use this as a global variable 
-      window.d3vis = {}
-      Deps.autorun(function () {
-        
-        // On first run, set up the visualiation
-        if (Deps.currentComputation.firstRun) {
-          window.d3vis.margin = {top: 15, right: 5, bottom: 5, left: 5},
-          window.d3vis.width = 600 - window.d3vis.margin.left - window.d3vis.margin.right,
-          window.d3vis.height = 120 - window.d3vis.margin.top - window.d3vis.margin.bottom;
-
-          window.d3vis.x = d3.scale.ordinal()
-              .rangeRoundBands([0, window.d3vis.width], .1);
-
-          window.d3vis.y = d3.scale.linear()
-              .range([window.d3vis.height-2, 0]);
-
-          window.d3vis.color = d3.scale.category10();
-
-          window.d3vis.svg = d3.select('#d3vis')
-              .attr("width", window.d3vis.width + window.d3vis.margin.left + window.d3vis.margin.right)
-              .attr("height", window.d3vis.height + window.d3vis.margin.top + window.d3vis.margin.bottom)
-            .append("g")
-              .attr("class", "wrapper")
-              .attr("transform", "translate(" + window.d3vis.margin.left + "," + window.d3vis.margin.top + ")");
-        }
-
-        // Get the colors based on the sorted names
-        names = Players.find({}, {sort: {name: 1}}).fetch()
-        window.d3vis.color.domain(names.map(function(d) { return d.name}));
-
-        // Get the players
-        players = Players.find({}, {sort: {score: -1, name: 1}}).fetch()
-        window.d3vis.x.domain(players.map(function(d) { return d.name}));
-        window.d3vis.y.domain([0, d3.max(players, function(d) { return d.score; })]);
-
-        // Two selectors (this could be streamlined...)
-        var bar_selector = window.d3vis.svg.selectAll(".bar")
-          .data(players, function (d) {return d.name})
-        var text_selector = window.d3vis.svg.selectAll(".bar_text")
-          .data(players, function (d) {return d.name})
-
-        bar_selector
-          .enter().append("rect")
-          .attr("class", "bar")
-        bar_selector
-          .transition()
-          .duration(100)
-          .attr("x", function(d) { return window.d3vis.x(d.name);})
-          .attr("width", window.d3vis.x.rangeBand())
-          .attr("y", function(d) { return window.d3vis.y(d.score); })
-          .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
-          .style("fill", function(d) { return window.d3vis.color(d.name);})
-
-        text_selector
-          .enter().append("text")
-          .attr("class", "bar_text")
-        text_selector
-          .transition()
-          .duration(100)
-          .attr()
-          .attr("x", function(d) { return window.d3vis.x(d.name) + 10;})
-          .attr("y", function(d) { return window.d3vis.y(d.score) - 2; })
-          .text(function(d) {return d.score;})
-          .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
-      });  
-    });
-  }
 }
 
-// On server startup, create some players if the database is empty.
-if (Meteor.isServer) {
-  Meteor.startup(function () {
-    if (Players.find().count() === 0) {
-      var names = ["Ada Lovelace",
-                   "Grace Hopper",
-                   "Marie Curie",
-                   "Carl Friedrich Gauss",
-                   "Nikola Tesla",
-                   "Claude Shannon"];
-      for (var i = 0; i < names.length; i++)
-        Players.insert({name: names[i], score: Math.floor(Math.random()*10)*5});
-    }
-  });
+if (Meteor.isClient) {
+   Meteor.defer(function () {
+     Deps.autorun(function () { 
+        if (Deps.currentComputation.firstRun) {  
+		    d3vis = {margin:{top:15,right:5,bottom:5,left:5},width:600,height:120};            
+            d3vis.svg = d3.select('#d3vis').attr({"width":d3vis.width,"height":d3vis.height}).append("g").attr({"class":"wrapper","transform":"translate("+d3vis.margin.left+","+d3vis.margin.top+")"});
+ 			d3.select("#svg1").attr({width:d3vis.width,height:d3vis.height})
+        }
+		var nameset = Players.find().fetch().sort(function(a,b) {return b.score-a.score});       
+		d3vis.x = d3.scale.ordinal().rangeRoundBands([0, d3vis.width],.1).domain(nameset.map(function(d) {return d.name}));
+		d3vis.y =  d3.scale.linear().range([d3vis.height-10,0]).domain([0,d3.max(nameset,function(d) {return d.score})+20]);
+		d3vis.color = d3.scale.category20().domain(nameset.map(function(d) {return d.name}).sort(d3.asscending));
+
+		d3.select("button#testbutton").on("click",function()  {
+			Players.update(Session.get("selected_player"),{$inc:{score:5}});
+			d3.selectAll(".player1").classed("selected",function(d) {return Session.equals("selected_player",d._id)});
+		})
+
+//view of player list
+		var playerset =  d3.select("#players").selectAll(".player1").data(nameset) 
+ 			.html(function(d) {return "<span class = name>"+d.name+"</span><span class = score>"+d.score+"</span>"});                 
+
+		playerset.enter().append("div").attr("class","player1")
+    		.html(function(d) {return "<span class = name>"+d.name+"</span><span class = score>"+d.score+"</span>"})    
+ 			.on("click",toggler)
+	   playerset.exit().remove(); 
+
+//view of the bar chart
+		var barset = d3.select("#svg1").selectAll(".bar1").data(nameset,function(d) {return d.name}) ;
+		barset.enter().append("rect").attr("class","bar1");
+		barset.transition().duration(100)
+  			.attr({"x":function(d) {return d3vis.x(d.name)},"width":d3vis.x.rangeBand(),"y":function(d) {return d3vis.y(d.score)},"height":function(d) {return d3vis.height-d3vis.y(d.score)}})
+  			.style("fill",function(d) {return d3vis.color(d.name);})  
+		barset.exit().remove();   
+		
+		var bartext = d3.select("#svg1").selectAll(".bar_text1").data(nameset,function(d) {return d.name});
+		bartext.enter().append("text").attr("class","bar_text1");   
+	    bartext.transition().duration(100).attr({"x":function(d) {return d3vis.x(d.name)+10},"y":function(d) {return d3vis.y(d.score)-2}})
+  			.text(function(d) {return d.name+": "+d.score}).attr("height",function(d) {return d3vis.height-d3vis.y(d.score)})               
+
+	    bartext.exit().remove();
+	                                   
+     }); //autorun  
+   }); //defer
+} //isClient
+
+function toggler() { 
+	Session.set('selected_player',Session.equals('selected_player',d3.select(this).datum()._id)?"":d3.select(this).datum()._id);  //tie selected element to session         
+	d3.selectAll(".player1").classed("selected",false);
+	d3.select(this).classed("selected",!d3.select(this).classed("selected")); //toggle selected switch 
 }
